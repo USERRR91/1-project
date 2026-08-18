@@ -1,0 +1,112 @@
+data class Student(
+var name: String,
+var age: Int,
+var group: String,
+var course: Int
+)
+
+class StudentManager(
+private val students: MutableList<Student>
+) {
+
+fun showStudents() {   
+    students.forEach {   
+        println("${it.name}, ${it.age} лет, ${it.group}, курс ${it.course}")   
+    }   
+}   
+
+fun addStudent(student: Student) {   
+    students.add(student)   
+}   
+
+fun findStudent(name: String): Student? {   
+    return students.find {   
+        it.name == name   
+    }   
+}   
+
+fun showAdults() {   
+    students   
+        .filter { it.age >= 18 }   
+        .forEach { println(it.name) }   
+}   
+
+fun removeStudent(name: String) {   
+    students.removeIf {   
+        it.name == name   
+    }   
+}
+
+}
+
+fun main() {
+
+val students = mutableListOf(   
+    Student("Андрей", 18, "ИТ-101", 1),   
+    Student("Иван", 19, "ИТ-101", 1),   
+    Student("Анна", 20, "ИТ-102", 2),   
+    Student("Максим", 17, "ИТ-103", 1)   
+)   
+
+val manager = StudentManager(students)   
+
+while (true) {   
+
+    println(   
+        """   
+           
+        === STUDENT MANAGER ===   
+        1. Показать студентов   
+        2. Добавить студента   
+        3. Найти студента   
+        4. Показать совершеннолетних   
+        5. Удалить студента   
+        0. Выход   
+        """.trimIndent()   
+    )   
+
+    when (readln()) {   
+
+        "1" -> manager.showStudents()   
+
+        "2" -> {   
+            print("Имя: ")   
+            val name = readln()   
+
+            print("Возраст: ")   
+            val age = readln().toInt()   
+
+            print("Группа: ")   
+            val group = readln()   
+
+            print("Курс: ")   
+            val course = readln().toInt()   
+
+            manager.addStudent(   
+                Student(name, age, group, course)   
+            )   
+        }   
+
+        "3" -> {   
+            print("Имя: ")   
+            val name = readln()   
+
+            val student = manager.findStudent(name)   
+
+            println(student ?: "Студент не найден")   
+        }   
+
+        "4" -> manager.showAdults()   
+
+        "5" -> {   
+            print("Имя: ")   
+            manager.removeStudent(readln())   
+        }   
+
+        "0" -> return   
+
+        else -> println("Неверная команда")   
+    }   
+}
+
+}

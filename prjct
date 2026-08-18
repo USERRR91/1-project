@@ -1,112 +1,109 @@
+package demo
+
 data class Student(
-var name: String,
-var age: Int,
-var group: String,
-var course: Int
-)
-
-class StudentManager(
-private val students: MutableList<Student>
+    val name: String,
+    var age: Int,
+    val group: String,
+    var course: Int
 ) {
-
-fun showStudents() {   
-    students.forEach {   
-        println("${it.name}, ${it.age} лет, ${it.group}, курс ${it.course}")   
-    }   
-}   
-
-fun addStudent(student: Student) {   
-    students.add(student)   
-}   
-
-fun findStudent(name: String): Student? {   
-    return students.find {   
-        it.name == name   
-    }   
-}   
-
-fun showAdults() {   
-    students   
-        .filter { it.age >= 18 }   
-        .forEach { println(it.name) }   
-}   
-
-fun removeStudent(name: String) {   
-    students.removeIf {   
-        it.name == name   
-    }   
+    override fun toString(): String = "$name, $age лет, $group, курс $course"
 }
 
+class StudentManager(students: MutableList<Student>) {
+    private val students = students.toMutableList() // копия для инкапсуляции
+
+    fun showStudents() {
+        if (students.isEmpty()) {
+            println("Список студентов пуст.")
+            return
+        }
+        students.forEach { println(it) }
+    }
+
+    fun addStudent(student: Student) {
+        students.add(student)
+        println("Студент добавлен.")
+    }
+
+    fun findStudent(name: String): Student? =
+        students.find { it.name.equals(name, ignoreCase = true) }
+
+    fun showAdults() {
+        val adults = students.filter { it.age >= 18 }
+        if (adults.isEmpty()) {
+            println("Совершеннолетних студентов нет.")
+        } else {
+            adults.forEach { println(it) }
+        }
+    }
+
+    fun removeStudent(name: String): Boolean =
+        students.removeIf { it.name.equals(name, ignoreCase = true) }
+}
+
+private fun prompt(msg: String): String? {
+    print(msg)
+    return readLine()?.trim()
 }
 
 fun main() {
+    val initial = mutableListOf(
+        Student("Андрей", 18, "ИТ-101", 1),
+        Student("Иван", 19, "ИТ-101", 1),
+        Student("Анна", 20, "ИТ-102", 2),
+        Student("Максим", 17, "ИТ-103", 1)
+    )
 
-val students = mutableListOf(   
-    Student("Андрей", 18, "ИТ-101", 1),   
-    Student("Иван", 19, "ИТ-101", 1),   
-    Student("Анна", 20, "ИТ-102", 2),   
-    Student("Максим", 17, "ИТ-103", 1)   
-)   
+    val manager = StudentManager(initial)
 
-val manager = StudentManager(students)   
+    menu@ while (true) {
+        println(
+            """
+            
+            === STUDENT MANAGER ===
+            1. Показать студентов
+            2. Добавить студента
+            3. Найти студента
+            4. Показать совершеннолетних
+            5. Удалить студента
+            0. Выход
+            """.trimIndent()
+        )
 
-while (true) {   
+        when (prompt(">")) {
+            "1" -> manager.showStudents()
+            "2" -> {
+                val name = prompt("Имя:").orEmpty()
+                if (name.isBlank()) { println("Имя не может быть пустым."); continue@menu }
 
-    println(   
-        """   
-           
-        === STUDENT MANAGER ===   
-        1. Показать студентов   
-        2. Добавить студента   
-        3. Найти студента   
-        4. Показать совершеннолетних   
-        5. Удалить студента   
-        0. Выход   
-        """.trimIndent()   
-    )   
+                val age = prompt("Возраст:")?.toIntOrNull()
+                if (age == null) { println("Некорректный возраст."); continue@menu }
 
-    when (readln()) {   
+                val group = prompt("Группа:").orEmpty()
+                if (group.isBlank()) { println("Группа не может быть пустой."); continue@menu }
 
-        "1" -> manager.showStudents()   
+                val course = prompt("Курс:")?.toIntOrNull()
+                if (course == null) { println("Некорректный курс."); continue@menu }
 
-        "2" -> {   
-            print("Имя: ")   
-            val name = readln()   
+                manager.addStudent(Student(name, age, group, course))
+            }
+            "3" -> {
+                val name = prompt("Имя:").orEmpty()
+                if (name.isBlank()) { println("Имя не может быть пустым."); continue@menu }
 
-            print("Возраст: ")   
-            val age = readln().toInt()   
+                val student = manager.findStudent(name)
+                println(student ?: "Студент не найден")
+            }
+            "4" -> manager.showAdults()
+            "5" -> {
+                val name = prompt("Имя:").orEmpty()
+                if (name.isBlank()) { println("Имя не может быть пустым."); continue@menu }
 
-            print("Группа: ")   
-            val group = readln()   
-
-            print("Курс: ")   
-            val course = readln().toInt()   
-
-            manager.addStudent(   
-                Student(name, age, group, course)   
-            )   
-        }   
-
-        "3" -> {   
-            print("Имя: ")   
-            val name = readln()   
-
-            val student = manager.findStudent(name)   
-
-            println(student ?: "Студент не найден")   
-        }   
-
-        "4" -> manager.showAdults()   
-
-        "5" -> {   
-            print("Имя: ")   
-            manager.removeStudent(readln())   
-        }   
-
-        "0" -> return   
-
-        else -> println("Неверная команда")   
-    }   
-}
-
+                val removed = manager.removeStudent(name)
+                println(if (removed) "Студент удалён." else "Студент не найден.")
+            }
+            "0" -> break@menu
+            else -> println("Неверная команда")
+        }
+    }
 }
